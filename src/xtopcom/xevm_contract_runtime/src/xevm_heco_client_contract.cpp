@@ -41,6 +41,7 @@ bool xtop_evm_heco_client_contract::init(const xbytes_t & rlp_bytes, state_ptr s
         return false;
     }
     // step 2: decode
+    // rlp解码数据，初始化数据是信任数据。是不携带validator信息的。
     auto left_bytes = std::move(rlp_bytes);
     std::vector<xeth_header_t> headers;
     while (!left_bytes.empty()) {
@@ -58,14 +59,14 @@ bool xtop_evm_heco_client_contract::init(const xbytes_t & rlp_bytes, state_ptr s
         xwarn("[xtop_evm_heco_client_contract::init] not enough headers");
         return false;
     }
-
+    // 初始化epoch块，header不是epoch块的话，初始化失败。
     std::error_code ec;
     xvalidators_snapshot_t snap;
     if (!snap.init_with_epoch(headers[0])) {
         xwarn("[xtop_evm_heco_client_contract::init] new_epoch_snapshot error");
         return false;
     }
-
+    // 存储
     for (size_t i = 0; i < headers.size(); ++i) {
         auto const & h = headers[i];
         if (i != 0) {
@@ -132,44 +133,51 @@ bool xtop_evm_heco_client_contract::sync(const xbytes_t & rlp_bytes, state_ptr s
             }
         }
         xinfo("[xtop_evm_heco_client_contract::sync] header dump: %s", header.dump().c_str());
-
+        // 验证数据，组装snap快照。
         xvalidators_snapshot_t snap;
         const uint32_t validator_num_index = 1;
         snap.number = static_cast<uint64_t>(header.number) - 1;
         snap.hash = header.parent_hash;
+        // validator_num 大小是validators数组的长度。
         auto validator_num = static_cast<uint64_t>(evm_common::fromBigEndian<u64>(item.decoded[validator_num_index]));
         // check decoded_size with recent_num
+        // 这decoded是 Header + Header + Validators + RecentsNum + Recents，他的size应该是5
         if (decoded_size < validator_num + validator_num_index + 1 + 1) {
             xwarn("[xtop_evm_heco_client_contract::sync] sync param error");
             return false;
         }
+        // validators 是第三个数组，所以 validators_index 是 validator_num_index 的下一个，validators_index = validator_num_index+1=2
         const uint32_t validators_index = validator_num_index + 1;
         for (uint64_t i = 0; i < validator_num; ++i) {
             snap.validators.insert(item.decoded[i + validators_index]);
         }
+        //  recent_num_index = validator_num + 2 ，这个大小应该是23，因为validators的数量是21.
         const uint32_t recent_num_index = validator_num + validator_num_index + 1;
         auto recent_num = static_cast<uint64_t>(evm_common::fromBigEndian<u64>(item.decoded[recent_num_index]));
         if (decoded_size < recent_num_index + 1 + recent_num) {
             xwarn("[xtop_evm_heco_client_contract::sync] sync param error");
             return false;
         }
-        const uint32_t recents_index = recent_num_index + 1;
+    
+        const uint32_t recent s_index = recent_num_index + 1;
         for (uint64_t i = 0; i < recent_num; ++i) {
+            //item.decoded中recent的数据是[k,v,k,v,k,v,...]这样的结构。所以要要这样提取recents
             auto k = static_cast<uint64_t>(evm_common::fromBigEndian<u64>(item.decoded[recents_index + i * 2]));
             snap.recents[k] = item.decoded[recents_index + i * 2 + 1];
         }
-
+        // 上面主要是提取数据，数据验证要看下面。
         xeth_header_t parent_header;
+        // 判断上个块是否存在。
         if (!get_header(header.parent_hash, parent_header, state)) {
             xwarn("[xtop_evm_heco_client_contract::sync] get parent header failed, hash: %s", header.parent_hash.hex().c_str());
             return false;
         }
-        // step 5: verify header
+        // step 5: verify header 和 块的validator是否合法。
         if (!verify(parent_header, header, snap, state)) {
             xwarn("[xtop_evm_heco_client_contract::sync] verify header failed");
             return false;
         }
-        // step 6: record
+        // step 6: record，存储数据
         if (!record(header, snap, state)) {
             xwarn("[xtop_evm_heco_client_contract::sync] record header failed");
             return false;
@@ -254,6 +262,7 @@ bool xtop_evm_heco_client_contract::is_confirmed(const u256 height, const xbytes
 }
 
 bool xtop_evm_heco_client_contract::verify(const xeth_header_t & prev_header, const xeth_header_t & new_header, xvalidators_snapshot_t & snap, state_ptr state) const {
+    // extra.size = extra_vanity + 21 * validator + extra_seal
     if (new_header.extra.size() < extra_vanity) {
         xwarn("[xtop_evm_heco_client_contract::verify] header extra size error: %lu, should < %lu", new_header.extra.size(), extra_vanity);
         return false;
@@ -264,6 +273,7 @@ bool xtop_evm_heco_client_contract::verify(const xeth_header_t & prev_header, co
     }
     bool is_epoch = (new_header.number % epoch == 0);
     uint64_t validators_bytes = new_header.extra.size() - extra_vanity - extra_seal;
+    // 如果不是epoch的话，validator应该等于0；是epoch块的话，validators_bytes 要存在
     if (!is_epoch && validators_bytes != 0) {
         xwarn("[xtop_evm_heco_client_contract::verify] not epoch but has validators_bytes");
         return false;
@@ -272,10 +282,12 @@ bool xtop_evm_heco_client_contract::verify(const xeth_header_t & prev_header, co
         xwarn("[xtop_evm_heco_client_contract::verify] validators_bytes length error: %lu", validators_bytes);
         return false;
     }
+    // 在heco中这个字段是个固定值。
     if (new_header.mix_digest != h256(0)) {
         xwarn("[xtop_evm_heco_client_contract::verify] mix_digest not 0: %lu", new_header.mix_digest.hex().c_str());
         return false;
     }
+    // heco中这个字段是个固定值。
     if (new_header.uncle_hash != empty_unclehash) {
         xwarn("[xtop_evm_heco_client_contract::verify] uncle_hash mismatch: %s, should be: %s", new_header.uncle_hash.hex().c_str(), empty_unclehash.hex().c_str());
         return false;
@@ -288,10 +300,12 @@ bool xtop_evm_heco_client_contract::verify(const xeth_header_t & prev_header, co
         xwarn("[xtop_evm_heco_client_contract::verify] gasUsed: %lu > gasLimit: %lu", new_header.gas_used, new_header.gas_limit);
         return false;
     }
+    // 判断高度
     if (!heco::config::is_london(new_header.number)) {
         xwarn("[xtop_evm_heco_client_contract::verify] not london fork");
         return false;
     }
+    // base_fee必须等于0。
     if (!heco::verify_eip1559_header(prev_header, new_header)) {
         xwarn("[xtop_evm_heco_client_contract::verify] verifyEip1559Header failed, new: %lu, old: %lu", new_header.gas_limit, prev_header.gas_limit);
         return false;
@@ -312,6 +326,7 @@ bool xtop_evm_heco_client_contract::verify(const xeth_header_t & prev_header, co
         xwarn("[xtop_evm_heco_client_contract::verify] snap hash mismatch: %s", last_info.snap_hash.hex().c_str(), snap_hash.hex().c_str());
         return false;
     }
+    // apply 中的逻辑和relayer中的apply的逻辑是一样的。主要是更新validators和验证validator
     if (!snap.apply(new_header, true)) {
         xwarn("[xtop_evm_heco_client_contract::verify] snap apply failed");
         return false;
