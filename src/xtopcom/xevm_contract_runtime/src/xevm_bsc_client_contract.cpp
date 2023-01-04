@@ -317,7 +317,7 @@ bool xtop_evm_bsc_client_contract::verify(const xeth_header_t & prev_header, con
         xwarn("[xtop_evm_bsc_client_contract::verify] height mismatch, new: %s, old: %s", new_header.number.str().c_str(), prev_header.number.str().c_str());
         return false;
     }
-
+    
     h256 last_hash = get_last_hash(state);
     xvalidators_snap_info_t last_info;
     if (!get_snap_info(last_hash, last_info, state)) {
