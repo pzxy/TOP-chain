@@ -327,7 +327,10 @@ bool xvalidators_snapshot_t::apply_with_chainid(const xeth_header_t & header, co
     }
     auto validator = ecrecover(header, chainid);
     xinfo("[xvalidators_snapshot_t::apply_with_chainid] number: %s, validator: %s", height.str().c_str(), to_hex(validator).c_str());
-
+    // 这里很重要，bsc是在当前epoch开始时候过了11个块，才会替换成当前epoch的validator的，在这之前，一直用上一个epoch 的 validators 来出块。
+    // 例如 200是一个epoch的开始，但是到了第211个块才会使用本次epoch的validators来出块。
+    // 注意 200-210是 11个块，不是10个块。
+    // 所以这里为什么不是 0 -- 10 呢？
     auto pos = height % 200;
     if (pos >= 1 && pos <= 10) {
         if (!last_validators.count(validator)) {
@@ -340,16 +343,19 @@ bool xvalidators_snapshot_t::apply_with_chainid(const xeth_header_t & header, co
             return false;
         }
     }
+    // 块的旷工地址必须等于validator。
     if (static_cast<h160>(validator) != header.miner) {
         xwarn("[xvalidators_snapshot_t::apply_with_chainid] validator %s is not miner %s", to_hex(validator).c_str(), header.miner.hex().c_str());
         return false;
     }
+    // 出块的validator不能在recents中，
     for (auto r : recents) {
         if (r.second == validator) {
             xwarn("[xvalidators_snapshot_t::apply_with_chainid] validator %s is in recent", to_hex(validator).c_str());
             return false;
         }
     }
+    // epoch 的首个块，快照要换一下validator。
     recents[static_cast<uint64_t>(height)] = validator;
     if (height > 0 && height % epoch == 0) {
         xbytes_t new_validators_bytes{header.extra.begin() + extraVanity, header.extra.end() - extraSeal};
@@ -363,6 +369,7 @@ bool xvalidators_snapshot_t::apply_with_chainid(const xeth_header_t & header, co
             new_validators.insert(xbytes_t{new_validators_bytes.begin() + i * addressLength, new_validators_bytes.begin() + (i + 1) * addressLength});
         }
         auto limit = new_validators.size() / 2 + 1;
+        // 这里不会进来，因为 validators.size() 和 new_validators.size() 大小应该是一样的
         for (auto i = 0; i < int(validators.size() / 2 - new_validators.size() / 2); i++) {
             recents.erase(static_cast<uint64_t>(height - limit - i));
         }
@@ -370,16 +377,19 @@ bool xvalidators_snapshot_t::apply_with_chainid(const xeth_header_t & header, co
         validators = new_validators;
     }
     number += 1;
-
-    const bigint diffInTurn = 2;
-    const bigint diffNoTurn = 1;
+    // 以下是校验出块顺序，这是bsc中规定的。
+    const bigint diffInTurn = 2;// 按照顺序出块
+    const bigint diffNoTurn = 1;// 没有按照顺序出块
     if (check_inturn) {
         bool turn{false};
+        // 出块的顺序应该按照validators列表中的顺序来出块。 
+        // inturn() 返回是 true就是顺序的，false就不是顺序的
         if (pos >= 0 && pos <= 10) {
             turn = inturn(number, validator, true);
         } else {
             turn = inturn(number, validator, false);
         }
+        // 如果 header中difficulty标记了出块的顺序，如果和inturn()检验结果不一样的。就返回错误。
         if (turn && header.difficulty != diffInTurn) {
             xwarn("[xvalidators_snapshot_t::apply] check inturn failed, turn: %d, difficulty: %s", turn, header.difficulty.str().c_str());
             return false;
