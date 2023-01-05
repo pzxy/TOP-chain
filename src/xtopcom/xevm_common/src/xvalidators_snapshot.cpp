@@ -331,6 +331,8 @@ bool xvalidators_snapshot_t::apply_with_chainid(const xeth_header_t & header, co
     // 例如 200是一个epoch的开始，但是到了第211个块才会使用本次epoch的validators来出块。
     // 注意 200-210是 11个块，不是10个块。
     // 所以这里为什么不是 0 -- 10 呢？
+    // 这是因为0的时候，新的validators刚被传进来，而更新last_validators和validators的逻辑在方法最后。
+    // 所以此时的 validators 相当于是 last_validators，在方法的最后才会执行 last_validators = validators
     auto pos = height % 200;
     if (pos >= 1 && pos <= 10) {
         if (!last_validators.count(validator)) {
