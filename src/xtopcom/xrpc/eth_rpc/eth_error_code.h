@@ -11,6 +11,7 @@ enum enum_error_code {
     enum_invalid_address,
 };
 enum enum_eth_rpc_code {
+    enum_eth_rpc_execution_reverted_new = 3,
     enum_eth_rpc_execution_reverted = -32000,
     enum_eth_rpc_invalid_request = -32600,
     enum_eth_rpc_method_not_find = -32601,

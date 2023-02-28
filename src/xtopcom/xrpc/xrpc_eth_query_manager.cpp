@@ -559,7 +559,7 @@ void xrpc_eth_query_manager::eth_call(Json::Value & js_req, Json::Value & js_rsp
     } else if (output.m_tx_result.status == evm_common::Revert) {
         auto const & extra_msg = output.m_tx_result.extra_msg;
         js_rsp["error"]["message"] = "execution reverted";
-        js_rsp["error"]["code"] = eth::enum_eth_rpc_execution_reverted;
+        js_rsp["error"]["code"] = eth::enum_eth_rpc_execution_reverted_new;
         js_rsp["error"]["data"] = extra_msg; 
         if (false == extra_msg.empty() && extra_msg != "0x"){
             auto t = evm_common::xabi_decoder_t::build_from_hex_string(extra_msg);
@@ -703,7 +703,7 @@ void xrpc_eth_query_manager::eth_estimateGas(Json::Value & js_req, Json::Value &
 
     case evm_common::Revert: {
         js_rsp["error"]["message"] = "execution reverted";
-        js_rsp["error"]["code"] = eth::enum_eth_rpc_execution_reverted;
+        js_rsp["error"]["code"] = eth::enum_eth_rpc_execution_reverted_new;
         js_rsp["error"]["data"] = extra_msg;
         if (false == extra_msg.empty() && extra_msg != "0x"){
             auto t = evm_common::xabi_decoder_t::build_from_hex_string(extra_msg);
