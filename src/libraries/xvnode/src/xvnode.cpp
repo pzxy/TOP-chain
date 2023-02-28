@@ -149,6 +149,7 @@ void xtop_vnode::start() {
     // }
     if (m_txpool_face != nullptr) {
         m_txpool_face->start();
+        
     }
 
     running(true);

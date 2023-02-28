@@ -2,13 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "xbasic/xhex.h"
 #include "xdata/xtransaction.h"
 #include <cinttypes>
 #include "xbase/xutl.h"
 #include "xcommon/xerror/xerror.h"
 #include "xconfig/xconfig_register.h"
 #include "xconfig/xpredefined_configurations.h"
-
+#include <nlohmann/json.hpp>
 namespace top { namespace data {
 
 bool xtransaction_t::transaction_type_check() const {
@@ -153,6 +154,37 @@ xeth_transaction_t xtransaction_t::to_eth_tx(std::error_code & ec) const {
     ec = common::error::xerrc_t::invalid_eth_tx;
     xerror("xtransaction_t::to_eth_tx fail-invalid");
     return {};
+}
+
+std::string xtransaction_t::to_audit_str(){
+    nlohmann::json js;
+        // txlocation
+    js["hash"] = get_digest_hex_str();
+    js["from"] = get_source_addr();
+    js["gas"] = top::to_hex_prefixed(top::to_bytes(get_gaslimit()));
+    js["gasPrice"] = top::to_hex_prefixed(top::to_bytes(0));
+    js["maxPriorityFeePerGas"] = top::to_hex_prefixed(top::to_bytes(get_max_priority_fee_per_gas()));
+    js["maxFeePerGas"] = top::to_hex_prefixed(top::to_bytes(get_max_fee_per_gas()));
+    js["input"] = top::to_hex_prefixed(top::to_bytes(get_data()));
+    js["nonce"] = top::to_hex_prefixed(top::to_bytes(get_tx_nonce()));
+    if (get_target_addr().size() != 0) {
+        js["to"] = get_target_addr();
+    } else {
+        js["to"] =  "";
+    }
+
+    js["type"] = top::to_hex_prefixed(top::to_bytes(int(get_tx_type())));
+    if (get_tx_version() == enum_xtransaction_version::xtransaction_version_3) {
+        js["value"] = top::to_hex_prefixed(top::to_bytes(get_amount_256()));
+
+    } else {
+        js["value"] = top::to_hex_prefixed(top::to_bytes(get_amount()));
+    }
+    js["expire"] = top::to_string(int(get_expire_duration()));
+    js["v"] = top::to_hex_prefixed(top::to_bytes(get_signV()));
+    js["s"] = top::to_hex_prefixed(top::to_bytes(get_signR()));
+    js["r"] = top::to_hex_prefixed(top::to_bytes(get_signR()));
+    return js.dump();
 }
 
 }  // namespace data

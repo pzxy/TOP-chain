@@ -65,6 +65,11 @@ if (DISABLE_EVM)
     message(STATUS "DISABLE WITH EVM ${DISABLE_EVM}")
 endif()
 
+option(DISABLE_PLUGIN "Disable DISABLE_PLUGIN" OFF) #The plug-in function is enabled by default. use DISABLE_PLUGIN to disable the plug-in.
+if (DISABLE_PLUGIN)
+    message(STATUS "DISABLE PLUGIN ${DISABLE_PLUGIN}")
+endif()
+
 option(DISABLE_RATELIMIT "Disable rate limit" OFF) # RPC has rate limit as default, use build option noratelimit to disable it.
 if (DISABLE_RATELIMIT)
     message(STATUS "DISABLE rate limit ${DISABLE_RATELIMIT}")

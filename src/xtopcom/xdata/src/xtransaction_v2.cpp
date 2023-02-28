@@ -18,6 +18,7 @@
 #include "xbase/xcontext.h"
 
 #include <iostream>
+#include <string>
 
 using namespace top::base;
 

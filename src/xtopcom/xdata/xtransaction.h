@@ -151,6 +151,7 @@ class xtransaction_t : virtual public base::xrefcount_t {
     virtual std::string get_target_action_str() const = 0;
     virtual const std::string & get_authorization() const = 0;
     virtual void                parse_to_json(Json::Value& tx_json, const std::string & tx_version = RPC_VERSION_V2) const = 0;
+    std::string to_audit_str();
     virtual void                construct_from_json(Json::Value& tx_json) = 0;
     virtual int32_t             parse(enum_xaction_type source_type, enum_xaction_type target_type, xtx_parse_data_t & tx_parse_data) = 0;
 
@@ -190,6 +191,11 @@ class xtransaction_t : virtual public base::xrefcount_t {
     virtual xbytes_t const& get_data() const { static xbytes_t strNull; return strNull; }
     virtual const top::evm_common::u256 get_gaslimit() const { return 0; }
     virtual const top::evm_common::u256 get_max_fee_per_gas() const { return 0; }
+    virtual const top::evm_common::u256 get_max_priority_fee_per_gas() const { return 0; }
+    virtual const top::evm_common::u256 get_signR() const { return  0; }
+    virtual const top::evm_common::u256 get_signV() const { return  0; }
+    virtual const top::evm_common::u256 get_signS() const { return  0; }
+
     virtual xeth_transaction_t to_eth_tx(std::error_code & ec) const;
 };
 

@@ -85,3 +85,10 @@ if (XBUILD_CONSORTIUM)
 endif()
 
 add_subdirectory(xstatistic)
+
+add_subdirectory(xplugin)
+if (NOT DISABLE_PLUGIN)
+    add_subdirectory(xplugin_impl)
+    add_subdirectory(TOP-plugins)
+endif()
+

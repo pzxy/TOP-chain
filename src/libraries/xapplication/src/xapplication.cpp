@@ -33,6 +33,9 @@
 #include "xgrpc_mgr/xgrpc_mgr.h"
 #include "xloader/xconfig_onchain_loader.h"
 #include "xmbus/xmessage_bus.h"
+#include "xplugin/xdefault_plugin.h"
+#include "xplugin/xplugin_manager.h"
+#include "xplugin_impl/xaudit_plugin.h"
 #include "xrouter/xrouter.h"
 #include "xsafebox/safebox_proxy.h"
 #include "xstore/xstore_error.h"
@@ -44,7 +47,7 @@
 
 NS_BEG2(top, application)
 
-xtop_application::xtop_application(common::xnode_id_t const & node_id, xpublic_key_t const & public_key, std::string && sign_key) // todo make it right value
+xtop_application::xtop_application(common::xnode_id_t const & node_id, xpublic_key_t const & public_key, std::string && sign_key)  // todo make it right value
   : m_node_id{node_id}
   , m_public_key{public_key}
   , m_network_id{top::config::to_chainid(XGET_CONFIG(chain_name))}
@@ -57,7 +60,6 @@ xtop_application::xtop_application(common::xnode_id_t const & node_id, xpublic_k
   , m_grpc_thread{make_object_ptr<base::xiothread_t>()}
   , m_sync_thread{make_object_ptr<base::xiothread_t>()}
   , m_elect_client{top::make_unique<elect::xelect_client_imp>()} {
-
     safebox::xsafebox_proxy::get_instance().add_key_pair(public_key, std::move(sign_key));
 
     int db_kind = top::db::xdb_kind_kvdb;
@@ -68,7 +70,15 @@ xtop_application::xtop_application(common::xnode_id_t const & node_id, xpublic_k
     base::xvchain_t::instance().set_xdbstore(m_store.get());
     base::xvchain_t::instance().set_xevmbus(m_bus.get());
     m_blockstore.attach(store::get_vblockstore());
-
+    m_plugin_mgr = std::make_shared<data::xplugin_manager_t>();
+#ifndef DISABLE_PLUGIN
+    std::shared_ptr<data::xaudit_pligin> plugin(&data::xaudit_pligin::instance());
+    // auto plugin = std::make_shared<data::xaudit_pligin>(&data::xaudit_pligin::instance());
+    m_plugin_mgr->add(data::AUDITX_PLUGIN, plugin);
+#else
+    auto plugin = std::make_shared<data::xdefault_plugin>(data::xdefault_plugin());
+    m_plugin_mgr->add(data::AUDITX_PLUGIN, plugin);
+#endif
     m_txstore = xobject_ptr_t<base::xvtxstore_t>(
         txstore::create_txstore(top::make_observer<mbus::xmessage_bus_face_t>(m_bus.get()), top::make_observer<xbase_timer_driver_t>(m_timer_driver)));
     base::xvchain_t::instance().set_xtxstore(m_txstore.get());
@@ -104,7 +114,7 @@ void xtop_application::start() {
 
     base::xvblock_fork_t::instance().init(chain_fork::xutility_t::is_block_forked);
 
-    m_txpool = xtxpool_v2::xtxpool_instance::create_xtxpool_inst(make_observer(m_blockstore), make_observer(m_cert_ptr), make_observer(m_bus));
+    m_txpool = xtxpool_v2::xtxpool_instance::create_xtxpool_inst(make_observer(m_blockstore), make_observer(m_cert_ptr), make_observer(m_bus), make_observer(m_plugin_mgr));
 
     m_syncstore.attach(new store::xsyncvstore_t(*m_cert_ptr.get(), *m_blockstore.get()));
     contract::xcontract_manager_t::instance().init(m_syncstore);
@@ -213,6 +223,7 @@ void xtop_application::start() {
 
         m_txpool_service_mgr->start();
         m_vhost->start();
+        // todo init auydit plugin
         m_message_callback_hub->start();
         m_vnode_manager->start();
 

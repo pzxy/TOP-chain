@@ -5,6 +5,7 @@
 
 #include "xbase/xcontext.h"
 #include "xbase/xmem.h"
+#include "xbasic/xhex.h"
 #include "xbasic/xscope_executer.h"
 #include "xmetrics/xmetrics.h"
 #include "xrpc/xerror/xrpc_error.h"
@@ -88,6 +89,7 @@ void xshard_rpc_handler::process_msg(const xrpc_msg_request_t & edge_msg) {
             xerror("xshard_rpc_handler::process_msg fail-parse tx from msg");
             return;
         }
+        xdbg("xshard_rpc_handler::audit-tx p(%p)", m_txpool_service.get());
         // json_proc.m_tx_ptr->m_from = edge_msg.m_advance_address;
         xdbg_rpc("deal tx hash: %s, version: %d, advance addr: %s",
                  data::uint_to_str(tx_ptr->digest().data(), tx_ptr->digest().size()).c_str(),
@@ -105,7 +107,6 @@ void xshard_rpc_handler::process_msg(const xrpc_msg_request_t & edge_msg) {
             XMETRICS_GAUGE(metrics::txdelay_client_timestamp_unmatch, 1);
         }
         XMETRICS_GAUGE(metrics::txdelay_from_client_to_validator, tx_ptr->get_delay_from_fire_timestamp(now));
-
         if (xsuccess != m_txpool_service->request_transaction_consensus(tx_ptr, false)) {
             // throw xrpc_error{enum_xrpc_error_code::rpc_param_param_error, "tx hash or sign error"};
             xwarn("[global_trace][shard_rpc][push unit_service] fail %s,%s", tx_hash.c_str(), tx_ptr->get_source_addr().c_str());
@@ -139,12 +140,12 @@ void xshard_rpc_handler::shard_process_request(const xrpc_msg_request_t & edge_m
     //     }
     // });
     // try {
-        if (edge_msg.m_tx_type == enum_xrpc_tx_type::enum_xrpc_tx_type) {
-            xdbg_rpc("xshard_rpc_handler msg recv tx %" PRIx64 ", send %s", msghash, edge_sender.to_string().c_str());
-            // xjson_proc_t json_proc;
-            process_msg(edge_msg);
-            // response_msg_ptr->m_message_body = json_proc.get_response();
-        }
+    if (edge_msg.m_tx_type == enum_xrpc_tx_type::enum_xrpc_tx_type) {
+        xdbg_rpc("xshard_rpc_handler msg recv tx %" PRIx64 ", send %s", msghash, edge_sender.to_string().c_str());
+        // xjson_proc_t json_proc;
+        process_msg(edge_msg);
+        // response_msg_ptr->m_message_body = json_proc.get_response();
+    }
     // } catch (const xrpc_error & e) {
     //     xwarn_rpc("error %s", e.what());
     //     xrpc_error_json error_json(e.code().value(), e.what(), edge_msg.m_client_id);

@@ -181,6 +181,7 @@ void xedge_method_base<T>::do_method(shared_ptr<conn_type> & response, xjson_pro
 
 template <class T>
 void xedge_method_base<T>::sendTransaction_method(xjson_proc_t & json_proc, const std::string & ip) {
+    xdbg("sendTransaction_method audit-tx-edge ip(%s),json:request (%s)",ip.c_str(),json_proc.get_request().c_str());
     auto & request = json_proc.m_request_json["params"];
     json_proc.m_tx_ptr = data::xtx_factory::create_tx(static_cast<data::enum_xtransaction_version>(request["tx_structure_version"].asUInt()));
     auto & tx = json_proc.m_tx_ptr;

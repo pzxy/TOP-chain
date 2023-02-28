@@ -25,7 +25,7 @@
 
 NS_BEG2(top, xtxpool_service_v2)
 
-using xtxpool_v2::xtxpool_t;
+//using xtxpool_v2::xtxpool_t;
 
 enum enum_txpool_service_msg_type  // under pdu  enum_xpdu_type_consensus
 {
