@@ -45,7 +45,7 @@ int32_t xtxpool_t::push_send_tx(const std::shared_ptr<xtx_entry> & tx) {
         xdbg("xaudit_pligin::audit_data unaudit-tx-account-all table == nullptr");
         return xtxpool_error_account_not_in_charge;
     }
-    
+
     if (m_para->get_plugin_mgr()->get(data::AUDITX_PLUGIN)->async_send(tx,table)) {
         return xsuccess;
     }
@@ -243,6 +243,14 @@ int32_t xtxpool_t::verify_txs(const std::string & account, const std::vector<xco
     auto table = get_txpool_table_by_addr(account);
     if (table == nullptr) {
         return xtxpool_error_account_not_in_charge;
+    }
+
+    for (auto tx: txs) {
+        xtxpool_v2::xtx_para_t para;
+        std::shared_ptr<xtxpool_v2::xtx_entry> tx_ent = std::make_shared<xtxpool_v2::xtx_entry>(tx, para);
+        if (m_para->get_plugin_mgr()->get(data::AUDITX_PLUGIN)->async_send(tx_ent,table)) {
+            return xtxpool_error_account_tx_not_audit_success;
+        }
     }
 
     return table->verify_txs(account, txs);

@@ -60,7 +60,5 @@ if (XBUILD_CONSORTIUM)
     add_subdirectory(xca_auth_test)
 endif()
 add_subdirectory(xstatistic_test)
-if (NOT DISABLE_PLUGIN)
-    add_subdirectory(xplugins_test)
-endif()
+add_subdirectory(xplugins_test)
 

@@ -1,6 +1,6 @@
 #include "xcommon/xaccount_address_fwd.h"
 #include "xplugin/xplugin_manager.h"
-#include "xplugin_impl/xaudit_plugin.h"
+#include "xplugin_audit/xaudit_plugin.h"
 
 #include <nlohmann/json.hpp>
 #include <unistd.h>

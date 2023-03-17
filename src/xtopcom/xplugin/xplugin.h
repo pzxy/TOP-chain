@@ -24,18 +24,18 @@ public:
     xplugin & operator=(xplugin &&) = default;
     virtual ~xplugin() = default;
     // load dynamic library
-    virtual bool load() = 0;
+    virtual bool load();
     // The specific implementation of the plugin may be in another language, and if the plugin needs to maintain its running state,
     // it should be started in the plugin manager, and of course, the 'run' function can also be placed in the 'load' function
-    virtual void run() = 0;
+    virtual void run();
     // Freeing memory is necessary. When implementing plugins in other languages,
     // memory control in those languages must be handled by the languages themselves.
     // Therefore, a function must be provided to free the memory of the plugin itself
-    virtual void free() = 0;
+    virtual void free();
     // To send data to a plugin
-    virtual bool send() = 0;
+    virtual bool send();
     // Async send data to a plugin
-    virtual bool async_send(const std::shared_ptr<top::xtxpool_v2::xtx_entry> & tx, const std::shared_ptr<top::xtxpool_v2::xtxpool_table_t> & table) = 0;
+    virtual bool async_send(const std::shared_ptr<top::xtxpool_v2::xtx_entry> & tx, const std::shared_ptr<top::xtxpool_v2::xtxpool_table_t> & table);
     void set_plugin_name(std::string plugin_name);
     std::string plugin_name();
     xdynamiclib dylib();

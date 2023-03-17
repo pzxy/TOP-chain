@@ -89,7 +89,6 @@ void xshard_rpc_handler::process_msg(const xrpc_msg_request_t & edge_msg) {
             xerror("xshard_rpc_handler::process_msg fail-parse tx from msg");
             return;
         }
-        xdbg("xshard_rpc_handler::audit-tx p(%p)", m_txpool_service.get());
         // json_proc.m_tx_ptr->m_from = edge_msg.m_advance_address;
         xdbg_rpc("deal tx hash: %s, version: %d, advance addr: %s",
                  data::uint_to_str(tx_ptr->digest().data(), tx_ptr->digest().size()).c_str(),

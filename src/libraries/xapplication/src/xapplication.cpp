@@ -33,9 +33,7 @@
 #include "xgrpc_mgr/xgrpc_mgr.h"
 #include "xloader/xconfig_onchain_loader.h"
 #include "xmbus/xmessage_bus.h"
-#include "xplugin/xdefault_plugin.h"
 #include "xplugin/xplugin_manager.h"
-#include "xplugin_impl/xaudit_plugin.h"
 #include "xrouter/xrouter.h"
 #include "xsafebox/safebox_proxy.h"
 #include "xstore/xstore_error.h"
@@ -71,14 +69,7 @@ xtop_application::xtop_application(common::xnode_id_t const & node_id, xpublic_k
     base::xvchain_t::instance().set_xevmbus(m_bus.get());
     m_blockstore.attach(store::get_vblockstore());
     m_plugin_mgr = std::make_shared<data::xplugin_manager_t>();
-#ifndef DISABLE_PLUGIN
-    std::shared_ptr<data::xaudit_pligin> plugin(&data::xaudit_pligin::instance());
-    // auto plugin = std::make_shared<data::xaudit_pligin>(&data::xaudit_pligin::instance());
-    m_plugin_mgr->add(data::AUDITX_PLUGIN, plugin);
-#else
-    auto plugin = std::make_shared<data::xdefault_plugin>(data::xdefault_plugin());
-    m_plugin_mgr->add(data::AUDITX_PLUGIN, plugin);
-#endif
+    m_plugin_mgr->init();
     m_txstore = xobject_ptr_t<base::xvtxstore_t>(
         txstore::create_txstore(top::make_observer<mbus::xmessage_bus_face_t>(m_bus.get()), top::make_observer<xbase_timer_driver_t>(m_timer_driver)));
     base::xvchain_t::instance().set_xtxstore(m_txstore.get());
@@ -223,7 +214,6 @@ void xtop_application::start() {
 
         m_txpool_service_mgr->start();
         m_vhost->start();
-        // todo init auydit plugin
         m_message_callback_hub->start();
         m_vnode_manager->start();
 

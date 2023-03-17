@@ -17,10 +17,9 @@ public:
     ~xplugin_manager() = default;
 
     void add(const std::string & plugin_name, std::shared_ptr<xplugin> plugin);
+    void init();
 
     xplugin * get(const std::string & plugin_name);
-    // template <typename T>
-    // T * plugin_instance(const std::string & plugin_name);
     void remove(const std::string & plugin_name);
 
 private:

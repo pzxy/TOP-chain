@@ -7,7 +7,6 @@
 #include "xbasic/xmemory.hpp"
 #include "xdata/xcons_transaction.h"
 #include "xtxpool_v2/xtxpool_table.h"
-#include "xplugin/xplugin_manager.h"
 
 #include <map>
 #include <set>

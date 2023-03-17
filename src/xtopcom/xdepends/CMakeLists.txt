@@ -16,7 +16,7 @@ if (XUSE_JEMALLOC)
         message(STATUS "enable jeprof")
         SET(JEMALLOC_ENABLE_JEPROF "--enable-prof")
     endif()
-    
+
     execute_process(
         COMMAND bash "-c" "rm ${JEMALLOC_AUTOGEN_LOG} ${JEMALLOC_MAKE_LOG}"
         WORKING_DIRECTORY ${JEMALLOC_WORKING_DIRECTORY}
@@ -198,7 +198,7 @@ add_subdirectory(xquic)
 message(STATUS "")
 message(STATUS "========== thrid-party: libevent ============")
 set(EVENT__LIBRARY_TYPE STATIC CACHE STRING "Build libevent only static")
-set(EVENT__DISABLE_OPENSSL OFF CACHE BOOL "Build libevent library without openssl")
+set(EVENT__DISABLE_OPENSSL ON CACHE BOOL "Build libevent library without openssl")
 set(EVENT__DISABLE_BENCHMARK ON CACHE BOOL "Build libevent disable benchmark")
 set(EVENT__DISABLE_TESTS ON CACHE BOOL "Build libevent disable test")
 set(EVENT__DISABLE_REGRESS ON CACHE BOOL "Build libevent disable regress test")

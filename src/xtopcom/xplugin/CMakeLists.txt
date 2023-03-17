@@ -3,9 +3,4 @@
 
 aux_source_directory(./src src_dir)
 add_library(xplugin ${src_dir})
-if (NOT DISABLE_PLUGIN)
-    target_link_libraries(xplugin)
-else()
-    target_link_libraries(xplugin)
-endif()
-
+target_link_libraries(xplugin PRIVATE xplugin_audit)

@@ -6,29 +6,22 @@
 
 #include "xbasic/xmemory.hpp"
 #include "xplugin/xplugin.h"
+#include "xplugin_audit/xaudit_plugin.h"
 
 using namespace std;
 using namespace top::data;
 NS_BEG2(top, data)
 
-// void xplugin_manager::init() {
-//     #ifndef DISABLE_PLUGIN
-//     if (plugin_name == AUDITX_PLUGIN) {
-//         std::unique_ptr<xaudit_pligin> plugin(&xaudit_pligin::instance());
-//         if (true == plugin->load()) {
-//             plugin->run();
-//             m_xplugin_map[plugin_name] = std::move(plugin);
-//         }
-//     }
-// #else
-//     auto plugin = top::make_unique<xdefault_plugin>(plugin_name);
-//     if (true == plugin->load()) {
-//         plugin->run();
-//         m_xplugin_map[plugin_name] = std::move(plugin);
-//     }
-// #endif
-//     add(AUDITX_PLUGIN);
-// }
+void xplugin_manager::init() {
+    if (&xaudit_pligin::instance() != nullptr) {
+        std::shared_ptr<xaudit_pligin> plugin(&xaudit_pligin::instance());
+        add(data::AUDITX_PLUGIN, plugin);
+    } else {
+        auto def = std::make_shared<xplugin>(xplugin());
+        add(data::AUDITX_PLUGIN, def);
+    }
+}
+
 void xplugin_manager::add(const std::string & plugin_name, std::shared_ptr<xplugin> plugin) {
     auto it = m_xplugin_map.find(plugin_name);
     if (it != m_xplugin_map.end()) {

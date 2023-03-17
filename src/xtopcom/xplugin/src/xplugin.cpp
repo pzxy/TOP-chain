@@ -14,4 +14,22 @@ xdynamiclib xplugin::dylib() {
     return m_dylib;
 }
 
+bool xplugin::load() {
+    return true;
+}
+void xplugin::run() {
+    return;
+}
+void xplugin::free() {
+    return;
+}
+
+bool xplugin::async_send(const std::shared_ptr<top::xtxpool_v2::xtx_entry> & tx, const std::shared_ptr<top::xtxpool_v2::xtxpool_table_t> & table) {
+    return false;
+}
+
+bool xplugin::send() {
+    return false;
+}
+
 NS_END2
