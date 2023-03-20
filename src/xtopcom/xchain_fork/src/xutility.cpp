@@ -12,10 +12,11 @@ NS_BEG2(top, chain_fork)
 
 bool xtop_utility::is_forked(top::optional<fork_points::xfork_point_t> const & fork_point, uint64_t const target) noexcept {
     if (!fork_point.has_value()) {
+        xinfo("xtop_utility::is_forked target: set-logs  fork_point.has_value() == false target:%d", target);
         return false;
     }
 
-    xdbg("xtop_utility::is_forked target:%" PRIu64 ", fork point:%" PRIu64 ", %s", target, fork_point.value().point, fork_point->description.c_str());
+    xinfo("xtop_utility::is_forked target:%" PRIu64 ", set-logs fork point:%" PRIu64 ", %s", target, fork_point.value().point, fork_point->description.c_str());
     return target >= fork_point.value().point;
 }
 

@@ -240,9 +240,10 @@ static void set_tvm_receipt_info(const xcons_transaction_ptr_t & tx,const xvm_ou
         return;
     }
     if (true == vmoutput.logs.empty()) {
+        xinfo("[xtxexecutor_top_vm_t::set_tvm_receipt_info] set-logs-tx logs is empty tx(%s)",tx->get_digest_hex_str().c_str());
         return;
     }
-    xdbg("[xtxexecutor_top_vm_t::set_tvm_receipt_info] set-logs-tx ready tx(%s)",tx->get_digest_hex_str().c_str());
+    xinfo("[xtxexecutor_top_vm_t::set_tvm_receipt_info] set-logs-tx ready tx(%s)",tx->get_digest_hex_str().c_str());
     data::xtop_store_receipt_t tvm_tx_receipt(vmoutput.logs);
     tx->set_tvm_tx_receipt(tvm_tx_receipt);
     xinfo("[xtxexecutor_top_vm_t::set_tvm_receipt_info] set-logs-tx success,tx(%s)",tx->get_digest_hex_str().c_str());

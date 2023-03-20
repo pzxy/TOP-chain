@@ -104,9 +104,14 @@ void xcontract_base::ASYNC_CALL(const std::string& target_addr, const std::strin
 
 void xcontract_base::TRANSFER(const std::string& target_addr, uint64_t amount) {
     // if amount = 0, then not create transfer tx, because consesenus not allowed
+    xinfo("xtop_utility::is_forked  set-logs enter xcontract_base::TRANSFER :%s,amount:%    
+    
+    d",target_addr.c_str(),amount);
     if (0 == amount) return;
     m_contract_helper->create_transfer_tx(target_addr, amount);
+    xinfo("xtop_utility::is_forked  set-logs create_transfer_tx :%s,amount:%d",target_addr.c_str(),amount);
     if (true == chain_fork::xutility_t::is_forked(fork_points::v11100_event, TIME())) {
+        xinfo("xcontract_base::TRANSFER set-logs enter is_forked :%s",target_addr.c_str());
         EVENT_TRANSFER(SELF_ADDRESS().to_string(),target_addr,amount);
     }
 }

@@ -1387,6 +1387,13 @@ xaccount_context_t::get_blockchain_height(const std::string & owner) const {
 common::xtop_logs_t const & xaccount_context_t::logs() const noexcept { return logs_; }
 
 void xaccount_context_t::add_log(common::xtop_log_t log) {
+        xinfo("[xaccount_context_t::add_log] set-logs address(%s),data(%s),bloom(%s)",
+             log.address.to_string().c_str(),
+             top::to_hex_prefixed(log.data).c_str(),
+             log.bloom().to_hex_string().c_str());
+        for (auto const & topic : log.topics) {
+            xinfo("[xaccount_context_t::add_log] set-logs topic(%s)", top::to_hex_prefixed(topic.asBytes()).c_str());
+        }
     logs_.emplace_back(std::move(log));
 #if defined(DEBUG)
     for (auto l : logs_) {
