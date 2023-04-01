@@ -72,6 +72,13 @@ option(XUSE_JEMALLOC "using jemalloc" OFF)# ON使用jemalloc内存分配器，je
 option(XBUILD_TEST "Enable building tests" OFF) # UNIT TEST disabled as default, use build option test to enable it.
 # FALSE、OFF、NO、NOTFOUND、0 或空字符串被视为false，其他任何值被视为true
 if (XBUILD_TEST)
+# FATAL_ERROR：输出错误信息并停止构建。
+# SEND_ERROR：输出错误信息，但不停止构建。
+# WARNING：输出警告信息。
+# AUTHOR_WARNING：输出作者警告信息。
+# DEPRECATION：输出弃用警告信息。
+# DEBUG：输出调试信息。
+# TRACE：输出跟踪信息。
     message(STATUS "ENABLE  building tests ${XBUILD_TEST}")
 endif()
 
@@ -88,6 +95,7 @@ endif()
 option(DISABLE_REAL_STAKE "Disable real stake require" OFF) # Real Stake requied as default, use build option mock_zec_stake to disable it.
 if(DISABLE_REAL_STAKE)
     message(STATUS "DISABLE real stake ${DISABLE_REAL_STAKE}")
+    # 这个定义将在编译时传递给编译器，并且可以在代码中使用#ifdef指令来检查该选项是否已启用。
     add_definitions(-DXENABLE_MOCK_ZEC_STAKE)
 endif()
 
