@@ -75,9 +75,9 @@ if [ $? -eq 1 ]; then
     # # JOBS=$(( MEM_GIG > CPU_CORE ? CPU_CORE : MEM_GIG ))
     # # make -j${JOBS}
     if [ $CPU_CORE -le 4 ]; then
-        make -j4
+        make -j2
     else
-        make -j${CPU_CORE}
+        make -j2
     fi
 else
     cbuild_path="cbuild"

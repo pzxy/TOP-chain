@@ -131,9 +131,11 @@ endif()
 #=============================================================================
 # for git version
 #==============================================================================
+# include(filename [OPTIONAL] [RESULT_VARIABLE VAR])
+# 生成git的一些信息,
 include(cmake/gitinfo.cmake)
 get_git_info()
-
+# 替换version版本.
 include(cmake/version.cmake)
 
 #==============================================================================
@@ -148,21 +150,36 @@ include(cmake/version.cmake)
 #set_property(DIRECTORY PROPERTY RUNTIME_OUTPUT_DIRECTORY ${XTOPCHAIN_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR/lib})
 #set_property(DIRECTORY PROPERTY LIBRARY_OUTPUT_DIRECTORY ${XTOPCHAIN_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
-
+# XTOPCHAIN_BINARY_DIR : /home/kwin/workspace/top/TOP-chain/cbuild
 set(EXECUTABLE_OUTPUT_PATH ${XTOPCHAIN_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME}/)
 set(LIBRARY_OUTPUT_PATH ${XTOPCHAIN_BINARY_DIR}/lib/${CMAKE_SYSTEM_NAME}/)
-
+# LIBRARY_OUTPUT_DIRECTORY是CMake内置的变量之一。它用于指定构建生成库文件（静态库或共享库）的输出目录
+# 如果您没有显式地设置这个变量，CMake会默认将静态库和共享库都放置在${CMAKE_BINARY_DIR}/lib/目录下
+# 其中 CMAKE_BINARY_DIR是CMake内置的变量之一。它表示运行cmake命令时所在的构建目录.
 if ("${LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
     set(LIBRARY_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 endif()
-
+# RUNTIME_OUTPUT_DIRECTORY 变量用于指定生成的可执行文件和共享库等运行时输出目录。而 CMAKE_SOURCE_DIR 变量表示项目根目录的路径。
+# RUNTIME_OUTPUT_DIRECTORY 默认为 CMAKE_SOURCE_DIR/bin
 if ("${RUNTIME_OUTPUT_DIRECTORY}" STREQUAL "")
     set(RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 endif()
-
+# CMAKE_CXX_COMPILER_ID 返回编译器标识符
+# GNU：表示 GNU 编译器
+# Clang：表示 Clang 编译器
+# Intel：表示 Intel C++ 编译器
+# MSVC：表示 Microsoft Visual C++ 编译器
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
-    # common compiling options
-    add_compile_options(
+    # common compiling options,向编译器添加编译参数选项. 
+    # -static：指定使用静态链接方式链接库文件。
+    # -static-libgcc 和 -static-libstdc++：指定在静态链接时使用静态版本的 GCC C++ 运行库和标准C库。
+    # -fno-strict-aliasing：指定禁用严格别名规则，以便编译器可以进行某些优化。
+    # -pthread：指定使用 POSIX 线程库。
+    # -fstack-protector-strong：指定启用堆栈保护机制，以便能够检测一些常见的堆栈溢出错误。
+    # -fno-short-enums：指定禁用枚举类型的隐式转换，以便在编译时提供更多的类型安全性。
+    # -Wno-deprecated-declarations：指定忽略已经过时的函数或语法声明的警告。
+    # -Wno-unused-function：指定忽略未使用的函数的警告。
+        add_compile_options(
         -static
         -static-libgcc
         -static-libstdc++
@@ -173,18 +190,26 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
         -Wno-deprecated-declarations
         -Wno-unused-function
     )
-
+    # XOS_ID 变量是上面设置上的
     if (${XOS_ID} MATCHES "ubuntu")
+    # -static-pie 选项则指定生成静态的位置独立代码。在 Linux 系统上，位置独立代码可以提高程序的安全性和可移植性。
+    # 别的系统中,可能不支持共享库.所以要用-fPIE
         add_compile_options(-static-pie)
     else()
         add_compile_options(-fpie -fPIE)
     endif()
 
     # CXX only
+    # '-frtti' 表示启用运行时类型信息（RTTI），允许程序在运行时使用 type_info 类型的对象，以及 dynamic_cast 和 typeid 运算符。
+    # '-fexceptions' 表示启用异常处理机制，允许程序抛出和捕获异常。
+    # '-fthreadsafe-statics' 表示对静态变量进行线程安全处理，在多线程环境下保证静态变量的正确性和一致性。
+    # $<...>是 CMake的生成器表达式语法，用来在构建时根据目标属性的值动态设置编译选项
+    # 当 LINKER_LANGUAGE 等于CXX时,才会添加-frtti
     add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-frtti>)
     add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-fexceptions>)
     add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-fthreadsafe-statics>)
-
+    # _D_GNU_SOURCE 宏定义，告诉编译器启用GNU特定的扩展和功能。限Linux系统,使程序能够访问一些非标准的函数和库。如getresuid(), setresuid()等
+    # 在源代码中加入#define _GNU_SOURCE或者使用编译选项-D_GNU_SOURCE来启用。由于这些扩展和功能是非标准的，因此可能会导致代码的可移植性问题。
     add_definitions(-D_GNU_SOURCE)
 
     #==============================================================================
@@ -197,18 +222,30 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     #==============================================================================
     # options for Debug
     #add_compile_options($<$<OR:$<CONFIG:Debug>,$<CONFIG:debug>>:-g2 -ggdb -O0 -fno-omit-frame-pointer>)
+
+    # set_property函数用于在目标或目录上设置属性。在这种情况下，DIRECTORY APPEND PROPERTY指定我们正在设置当前目录的属性。
+    # 此属性将应用于该目录及其所有子目录中构建的所有目标。
+    # "DIRECTORY APPEND PROPERTY"选项表示我们正在设置的是目录的属性，而不是目标的属性。具体来说，"APPEND"选项表示我们将添加一个值到已经存在的属性之后，而不是覆盖它。
+    # COMPILE_OPTIONS 属性被附加这些内容: 设置了Debug和debug配置的编译选项。这些选项包括-g3（生成调试信息），-ggdb（使用gdb调试器），-O0（禁用优化）和-fno-omit-frame-pointer（保留用于调试的帧指针）。
     set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<OR:$<CONFIG:Debug>,$<CONFIG:debug>>:-g3 -ggdb -O0 -fno-omit-frame-pointer>)
     set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS $<$<OR:$<CONFIG:Debug>,$<CONFIG:debug>>:DEBUG _DEBUG>)
 
     # options for Release & RelWithDebInfo
     # add_compile_options($<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:release>>:-fomit-frame-pointer -ffunction-sections -fdata-sections>)
+    # 配置release 
+    # -ffunction-sections: 此标志告诉编译器将每个函数放置到输出文件的自己的部分中。这可以潜在地使链接器丢弃未使用的函数，从而产生较小的二进制文件。
+    # -fdata-sections: 类似于-ffunction-sections，此标志告诉编译器将每个全局变量放置到其自己的部分中。
+    # -flto=auto: 启用 GCC 和 Clang 编译器的链接时优化 (LTO)。LTO 允许编译器执行考虑整个程序而不是单个源文件的优化。=auto 选项指定如果编译器和链接器支持，则启用 LTO。
+    # -fuse-linker-plugin: 与 LTO 相关，此标志启用 LTO 的链接器插件。
     set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:release>>:-ffunction-sections -fdata-sections -flto=auto -fuse-linker-plugin>)
     set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:release>>:NDEBUG>)
 
     # options for Release
+    # 如果构建配置为Release或者release，则将"-g0"选项添加到编译选项中。"-g0"选项告诉编译器在生成可执行文件时不要包含任何调试信息。这可以减小可执行文件的大小，并提高其运行效率。
     add_compile_options($<$<OR:$<CONFIG:Release>,$<CONFIG:release>>:-g0>)
 
     # options for RelWithDebInfo
+    # "-g1"选项告诉编译器在生成可执行文件时包含基本的调试信息，-ggdb"选项告诉编译器在生成可执行文件时包含完整的调试信息
     add_compile_options($<$<CONFIG:RelWithDebInfo>:-g1>)
     add_compile_options($<$<CONFIG:RelWithDebInfo>:-ggdb>)
 else()
