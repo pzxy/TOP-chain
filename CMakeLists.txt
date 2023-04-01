@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-# RESULT 指定变量名为XOS_ID，QUERY参数指定了要查询的系统信息的名称，DISTRIB_ID表示查询的是系统发行版id，
+
 cmake_host_system_information(RESULT XOS_ID QUERY DISTRIB_ID)
 if (${XOS_ID} MATCHES "centos")
     set(XSYS_VER 0)
@@ -12,65 +12,50 @@ endif()
 if (${XSYS_VER} EQUAL 0)
     set(CMAKE_CXX_STANDARD 11)
 else()
-# 设置c++标准为c++23
     set(CMAKE_CXX_STANDARD 23)
 endif()
-# ON 表示必须支持选定的c++标准
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# 选项表示是否启用编译器的扩展功能，扩展功能会降低可移植性。比如：inline namespace、constexpr、noexcept等C++11标准引入的新特性等；
 set(CMAKE_CXX_EXTENSIONS OFF)
-# 设置c标准选项
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-# Makefile文件是否输出详细的编译信息，还是只输出必要信息。默认为ON，即输出详细信息。
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-# 生成编译命令的JSON文件，可以用于一些代码编辑器的自动补全和语法检查功能。默认根目录下的：compile_commands.json 文件。
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# 设置编译器类型，设置成Debug或者Release，如果没有设置编译类型，则设置成Debug
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-# 设置项目名，并指定编译器
 project(XTOPCHAIN CXX C)
-# 寻找静态链接库
+
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 
-# 没有c++编译器就输出FATAL_ERROR致命错误
 if (NOT CMAKE_CXX_COMPILER)
     message(FATAL_ERROR "C++ Compiler not found")
 endif()
-# 将内置变量CMAKE_BUILD_TYPE 值转换成小写， 放在XBUILD_TYPE中。
+
 string(TOLOWER ${CMAKE_BUILD_TYPE} XBUILD_TYPE)
-# 如果 变量XBUILD_TYPE包含rel，就设置XBUILD_TYPE成release
 if ("${XBUILD_TYPE}" MATCHES "rel")
     set(XBUILD_TYPE release)
 endif()
-# CMAKE_SYSTEM_NAME是CMake内置的变量，用于指定操作系统的名称，并转换成小写，就是：android，ios，linux，mac，win这些
 string(TOLOWER ${CMAKE_SYSTEM_NAME} XSYSTEM_NAME_LOWERCASE)
-# 按照上面的代码，1的话是ubuntu
+
 if (${XSYS_VER} EQUAL 1)
-# add_definitions 向C++编译器添加预定义宏
-# MSGPACK_NO_BOOST 表示禁用boost库支持，“-D”选项以通知编译器定义该宏。
-# 之所以禁用boost库支持，由于Ubuntu默认情况下安装的Boost库版本和路径与CMake的默认设置不一致，可能找不到这个库。
     add_definitions(-DMSGPACK_NO_BOOST)
-# OPENSSL_API_COMPAT=10101表示启用与OpenSSL 1.1.1兼容的API
     add_definitions(-DOPENSSL_API_COMPAT=10101)
 endif()
-# 这些选项变量都是定义的，定义的这些变量可以通过 ${变量名} 的方式来使用。这里它的默认值就是OFF
-# 如果要启用某个选项，可以在cmake命令后面加上 -D变量名=ON，比如-DXENABLE_CODE_COVERAGE=ON,或者这里直接将OFF改为ON
-option(XENABLE_CODE_COVERAGE "Enable code coverage" OFF)# 是否启用代码覆盖率检测
-option(BUILD_METRICS "build metrics" OFF)# 性能测试是否打开
-option(XCHAIN_FORKED_BY_DEFAULT "Enable chain forked logic" OFF)# 分叉
-option(ENABLE_METRICS_DATAOBJECT "Enable metrics dataobject" OFF)# 度量数据对象
-option(DISABLE_CORE_SIGNAL_CAPTURE "disable core signal capture" OFF)# core signal capture
-option(DISABLE_SIGNAL_CAPTURE "disable all signal capture" OFF)# ON则禁用所有信号捕获
-option(XUSE_JEMALLOC "using jemalloc" OFF)# ON使用jemalloc内存分配器，jemalloc是一个开源的内存分配器，它的目标是替换glibc的malloc。
+
+option(XENABLE_CODE_COVERAGE "Enable code coverage" OFF)
+option(BUILD_METRICS "build metrics" OFF)
+option(XCHAIN_FORKED_BY_DEFAULT "Enable chain forked logic" OFF)
+option(ENABLE_METRICS_DATAOBJECT "Enable metrics dataobject" OFF)
+option(DISABLE_CORE_SIGNAL_CAPTURE "disable core signal capture" OFF)
+option(DISABLE_SIGNAL_CAPTURE "disable all signal capture" OFF)
+option(XUSE_JEMALLOC "using jemalloc" OFF)
 
 option(XBUILD_TEST "Enable building tests" OFF) # UNIT TEST disabled as default, use build option test to enable it.
-# FALSE、OFF、NO、NOTFOUND、0 或空字符串被视为false，其他任何值被视为true
 if (XBUILD_TEST)
     message(STATUS "ENABLE  building tests ${XBUILD_TEST}")
 endif()
