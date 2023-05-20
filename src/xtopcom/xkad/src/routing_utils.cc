@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <limits>
 #include <locale>
+#include "xbase/xbase.h"
 
 namespace top {
 
@@ -30,11 +31,14 @@ namespace kadmlia {
 void GetPublicEndpointsConfig(const top::base::Config &, std::set<std::pair<std::string, uint16_t>> & boot_endpoints) {
     std::string p2p_endpoints = XGET_CONFIG(p2p_endpoints);
     top::base::ParseEndpoints(p2p_endpoints, boot_endpoints);
+    xinfo("GetPublicEndpointsConfig p2p_endpoints:%s", p2p_endpoints.c_str());
 }
 
 bool CreateGlobalXid(const base::Config & config) try {
     assert(!global_node_id.empty());
+    xinfo("CreateGlobalXid global_xid global_xid:%s", global_node_id.c_str());
     global_xid = base::GetRootKadmliaKey(global_node_id);
+    xinfo("CreateGlobalXid global_xid:%s", global_xid.get()->Xip().to_string().c_str());
     return true;
 } catch (...) {
     TOP_FATAL("catch ...");

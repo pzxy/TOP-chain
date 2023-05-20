@@ -123,16 +123,21 @@ void check_log_path(const std::string & log_path) {
 
 int load_xtopchain(config_t & config) {
     if (config.so_func_name == "parse_execute_command") {
+        std::cout << "666666666666666666666666-parse_execute_command" << std::endl;
         return top::parse_execute_command(config.config_file_extra.c_str(), config.argc, config.argv);
     } else if (config.so_func_name == "init_component") {
         top::print_version();
+        std::cout << "666666666666666666666666-init_component" << std::endl;
         return top::topchain_init(config.config_file, config.config_file_extra);
     } else if (config.so_func_name == "init_noparams_component") {
         top::print_version();
+        std::cout << "666666666666666666666666-init_noparams_component" << std::endl;
         return top::topchain_noparams_init(config.pub_key, config.pri_key, config.node_id, config.datadir, config.config_file_extra);
     } else if (config.so_func_name == "decrypt_keystore_by_key") {
+        std::cout << "666666666666666666666666-decrypt_keystore_by_key" << std::endl;
         config.pri_key = top::decrypt_keystore_by_key(config.keystore_path, config.token);
     } else if (config.so_func_name == "check_miner_info") {
+        std::cout << "666666666666666666666666-check_miner_info" << std::endl;
         std::string miner_type;
         bool status = top::check_miner_info(config.pub_key, config.node_id, miner_type);
         if (!status) {
@@ -140,6 +145,7 @@ int load_xtopchain(config_t & config) {
         }
         config.token = miner_type;
     } else {
+        std::cout << "666666666666666666666666-unsupport function" << std::endl;
         std::cerr << "unsupport function:" << config.so_func_name << std::endl;
         return -1;
     }

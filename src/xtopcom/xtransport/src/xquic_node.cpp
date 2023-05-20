@@ -65,6 +65,7 @@ void xquic_node_t::stop() {
 }
 
 void xquic_node_t::register_on_receive_callback(on_receive_callback_t cb) {
+    xinfo("callback-info register xquic_node_t");
     m_cb = cb;
 }
 
@@ -74,7 +75,12 @@ void xquic_node_t::unregister_on_receive_callback() {
 
 /// NOTED: this API will be used by any thread. need to handle multi-thread issue.
 int xquic_node_t::send_data(std::string const & data, std::string const & addr, uint16_t port) {
+<<<<<<< Updated upstream
     XMETRICS_TIME_RECORD("xquic_node_send");
+=======
+    xinfo("callback-info xp2pudp_t::send enter,xquic_node_t::send_data enter 1");
+    // XMETRICS_TIME_RECORD("xquic_node_send");
+>>>>>>> Stashed changes
     auto addr_port = addr + ":" + std::to_string(port);
     auto bytes_data = top::to_bytes(data);
 
@@ -133,6 +139,8 @@ void xquic_node_t::on_quic_message_ready(top::xbytes_t const & bytes, std::strin
     packet.set_from_ip_port(peer_inbound_port);
 
     assert(m_cb);
+    // TODO : 代码没跑到这里，需要确认
+    xinfo("callback-info-quick-3: type:%d,src_node_id:%s,dst_node_id:%s", proto_message.type(),proto_message.src_node_id().c_str(),proto_message.des_node_id().c_str());
     m_cb(proto_message, packet);
 }
 

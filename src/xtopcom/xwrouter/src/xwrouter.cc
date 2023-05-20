@@ -111,6 +111,7 @@ int32_t Wrouter::recv(transport::protobuf::RoutingMessage & message, base::xpack
 
     int32_t rcode = wxid_handler_->RecvPacket(message, packet);
     if (rcode == kRecvOwn) {
+        xinfo("callback-info HandleOwnPacket");
         return HandleOwnPacket(message, packet);
     }
     return rcode;
@@ -126,6 +127,7 @@ int32_t Wrouter::recv(transport::protobuf::RoutingMessage & message, base::xpack
 #undef NOW_TIME
 
 int32_t Wrouter::HandleOwnPacket(transport::protobuf::RoutingMessage & message, base::xpacket_t & packet) {
+    xinfo("callback-info HandleMessage");
     WrouterMessageHandler::Instance()->HandleMessage(message, packet);
     return enum_xcode_successful;
 }

@@ -44,6 +44,7 @@ ThreadHandler::~ThreadHandler() {
 // packet is from   send(xpacket_t & packet) or dispatch(xpacket_t & packet) of xdatabox_t
 // subclass need overwrite this virtual function if they need support signal(xpacket_t) or send(xpacket_t),only allow called internally
 bool ThreadHandler::on_databox_open(base::xpacket_t & packet, int32_t cur_thread_id, uint64_t time_now_ms) {
+    xinfo("callback-info ThreadHandler::on_databox_open");
     return ThreadHandler::fired_packet(packet, cur_thread_id, time_now_ms, callback_);
 }
 
@@ -74,6 +75,7 @@ bool ThreadHandler::fired_packet(base::xpacket_t & packet, int32_t cur_thread_id
                   pro_message.is_root());
     }
     assert(callback_ptr);
+    xinfo("callback-info fired_packet recv ThreadHandler::on_databox_open");
     callback_ptr(pro_message, packet);
 
     return true;

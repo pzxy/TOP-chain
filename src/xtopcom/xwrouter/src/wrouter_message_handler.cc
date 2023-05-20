@@ -66,6 +66,7 @@ void WrouterMessageHandler::HandleMessage(transport::protobuf::RoutingMessage & 
         TOP_WARN("invalid message.type(%d), callback not registered", message.type());
         return;
     }
+    xinfo("callback-info-wroutermessagehandler-4: message-type:%d", message.type());
     call(message, packet);
 }
 

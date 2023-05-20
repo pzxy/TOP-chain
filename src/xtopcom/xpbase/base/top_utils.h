@@ -87,7 +87,7 @@ enum RoutingMessageType {
     kKadHandshake,
 
     // root broadcast block sync
-    kGossipBlockSyncAsk = 20,
+    kGossipBlockSyncAsk = 20,//注册在一个timer中，每隔一段时间发送一次，BlockSyncManager::CheckHeaderHashQueue() 中处理
     kGossipBlockSyncAck = 21,
     kGossipBlockSyncRequest = 22,
     kGossipBlockSyncResponse = 23,

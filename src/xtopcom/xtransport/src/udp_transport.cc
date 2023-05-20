@@ -149,6 +149,7 @@ int UdpTransport::get_socket_status() {
 }
 
 void UdpTransport::register_on_receive_callback(on_receive_callback_t callback) {
+    xinfo("callback-info register UdpTransport");
     assert(message_handler_);
     message_handler_->register_on_dispatch_callback(callback);
 

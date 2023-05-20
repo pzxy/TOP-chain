@@ -51,7 +51,7 @@ void ServiceType::update_info() {
     std::string buffer;
     buffer.reserve(100);
     std::ostringstream oss(buffer);
-
+    xinfo("mtype-info :%llu", m_type);
     oss << "[ver " << ((m_type >> 63)) << "]-"
         << "[network " << ((m_type << 1) >> (1 + 43)) << "]-"
         << "[zone " << ((m_type << 21) >> (21 + 36)) << "]-"
@@ -169,6 +169,7 @@ base::KadmliaKeyPtr GetRootKadmliaKey(std::string const &node_id) {
     h.reset();
     h.update(node_id);
     h.get_hash(v);
+    xinfo("xid-info 1:%d", v.data());
     XMETRICS_GAUGE(metrics::cpu_hash_256_GetRootKadmliaKey_calc, 1);
     std::string node_id_hash_32((char *)v.data(), v.size());
     uint64_t high, low;
@@ -184,8 +185,8 @@ base::KadmliaKeyPtr GetRootKadmliaKey(std::string const &node_id) {
     set_network_id_to_xip2(_xvip, kRootNetworkId);
     common::xip2_t xip(_xvip);
     assert(xip.network_id().value() == kRootNetworkId);
-    // xdbg("[GetRootKadmliaKey] get root kad key: xip:%s node_id: %s",
-    //      xip.to_string().c_str(), node_id.c_str());
+    xdbg("[GetRootKadmliaKey] get root kad key: xip:%s node_id: %s",
+         xip.to_string().c_str(), node_id.c_str());
     return GetKadmliaKey(xip);
 }
 
@@ -193,6 +194,8 @@ KadmliaKey::KadmliaKey(common::xip2_t const &xip) : xip_(xip) {}
 
 KadmliaKey::KadmliaKey(std::string const &from_str) {
     // xdbg("KadmliaKey from_str %s", from_str.c_str());
+    // 3ecfffff96ea335a.6431c5187ffb89b4
+    xinfo("KadmliaKey-xnode %s", from_str.c_str());
     assert(from_str.size() == 33 && from_str[16] == '.');
     auto low_str = from_str.substr(0, 16);
     auto high_str = from_str.substr(17, 32);

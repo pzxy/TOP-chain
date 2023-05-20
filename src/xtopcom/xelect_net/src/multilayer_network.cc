@@ -42,6 +42,7 @@ MultilayerNetwork::MultilayerNetwork(common::xnode_id_t const & node_id, const s
             vhost_map_[xnetwork_id] = ecvhost;
         }
         xinfo("add ecvhost xnetwork_id:%u to map", xnetwork_id);
+        xinfo("add ecvhost xnetwork_id m_node_id_:%s to map", m_node_id_.base_address().c_str());
     }
 }
 
@@ -102,10 +103,13 @@ bool MultilayerNetwork::Init(const base::Config & config) {
         xerror("multi_message_handler empty");
         return false;
     }
+    // udp 模块中的处理程序
     multi_message_handler_->Init();
 
     std::string local_ip = XGET_CONFIG(ip);
     uint16_t local_port = XGET_CONFIG(node_p2p_port);
+    //  local-ip:127.0.0.1, local_port:9002
+    xinfo("local-ip:%s, local_port:%u", local_ip.c_str(), local_port);
     if (!core_transport_->Init(local_ip, local_port, multi_message_handler_.get())) {
         xerror("MultilayerNetwork::Init udptransport init failed");
         return false;
@@ -143,6 +147,8 @@ bool MultilayerNetwork::Run(const base::Config & config) {
     }
 
     for (const auto & xnetwork_id : xnetwork_id_set_) {
+        // only one, xnetwork_id:255
+        xinfo("start-ecvhost xnetwork_id:%u", xnetwork_id);
         auto ecvhost = GetEcVhost(xnetwork_id);
         if (!ecvhost) {
             continue;

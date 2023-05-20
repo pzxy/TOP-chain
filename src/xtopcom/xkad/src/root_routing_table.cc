@@ -1100,7 +1100,7 @@ int RootRoutingTable::Bootstrap(const std::string & peer_ip, uint16_t peer_port,
     message.set_data(data);
     return SendData(message, peer_ip, peer_port);
 }
-
+// TODO。dont using？
 void RootRoutingTable::FindCloseNodesWithEndpoint(const std::string & des_node_id, const std::pair<std::string, uint16_t> & boot_endpoints) {
     transport::protobuf::RoutingMessage message;
     SetFreqMessage(message);

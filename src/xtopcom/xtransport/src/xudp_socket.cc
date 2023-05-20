@@ -184,6 +184,7 @@ int32_t xp2pudp_t::connect_xudp(const std::string & target_ip, const uint16_t ta
                                                                                                                                    // timeout if 45 seconds not receive any packet
 }
 int xp2pudp_t::send(xpacket_t & packet) {
+    xinfo("callback-info xp2pudp_t::send enter");
     XMETRICS_GAUGE(metrics::message_transport_send, 1);
     if (packet.get_size() > SEND_USE_QUIC_PACKET_SIZE) {
         const std::string src_data((const char *)packet.get_body().data(), packet.get_body().size());
@@ -192,7 +193,10 @@ int xp2pudp_t::send(xpacket_t & packet) {
     if (packet.get_size() > 512) {
         packet.set_process_flag(enum_xpacket_process_flag_compress);  // ask compres
     }
+    xinfo("callback-info xp2pudp_t::send enter,xslsocket_t::send enter 2");
     int ret_status = xslsocket_t::send(0, 0, 0, 0, packet, 0, 0, NULL);
+    xinfo("callback-info xp2pudp_t::send enter,xslsocket_t::send end 2");
+
 
 #ifdef XENABLE_P2P_BENDWIDTH
     transport::protobuf::RoutingMessage message;
@@ -302,6 +306,7 @@ xslsocket_t * XudpSocket::on_xslsocket_accept(xfd_handle_t handle, xsocket_prope
         return nullptr;
     }
     if (m_register_node_callback != nullptr) {
+        xinfo("callback-info-udp-1 peer_account_id:%s", property._peer_account_id.c_str());
 #ifndef XENABLE_MOCK_ZEC_STAKE
         if (m_register_node_callback(property._peer_account_id, property._peer_signature) != 0) {
             // register_callback failed.

@@ -194,18 +194,23 @@ void xtop_application::start() {
     contract::xcontract_manager_t::set_nodesrv_ptr(m_nodesvr_ptr);
 
     auto const last_logic_time = this->last_logic_time()->get_height();
+    // 1. If the current node is a genesis node, skip the following steps
     do {
         if (is_genesis_node()) {
             break;
         }
 
+        // 2. Get the local time and check if the node has been offline for too long
         auto const current_local_logic_time = config::gmttime_to_logic_time(base::xtime_utl::gmttime());
         bool const offline_too_long =
             current_local_logic_time < last_logic_time || (last_logic_time != 0 && (current_local_logic_time - last_logic_time >= 30));  // 5min = 300s = 30 logic time
+
+        // 3. If the node has been offline for too long, or if the node is not a beacon node, trigger a bootstrap join
         if (offline_too_long || !is_beacon_account()) {
             m_elect_client->bootstrap_node_join();
         }
     } while (false);
+
 
     // start
     {

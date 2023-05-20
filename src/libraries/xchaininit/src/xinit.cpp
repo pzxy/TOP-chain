@@ -199,7 +199,6 @@ int topchain_init(const std::string& config_file, const std::string& config_extr
     using namespace vnetwork;
     using namespace store;
     using namespace rpc;
-
     catch_system_signals();//setup and hook system signals
 
     // init up

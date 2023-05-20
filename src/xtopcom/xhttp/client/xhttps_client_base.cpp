@@ -55,6 +55,7 @@ xtop_https_client_base::~xtop_https_client_base() {
 }
 
 std::string xtop_https_client_base::request_get() {
+    std::cout << "99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999:" << default_request_path.c_str() << std::endl;
     auto res = m_client->_.request("GET", default_request_path);
     return res->content.string();
 }

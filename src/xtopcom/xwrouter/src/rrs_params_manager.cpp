@@ -29,6 +29,7 @@ void RRSParamsMgr::update_rrs_params_with_node_size() {
     if (!m_callback) {
         return;
     }
+    xinfo("callback-info-rrs-2,node_size:%llu", node_size);
     m_callback(node_size, ec);
     if (ec) {
         xinfo("update_rrs_params_with_node_size, get_node_size from rec_standby failed %s %s", ec.category().name(), ec.message().c_str());

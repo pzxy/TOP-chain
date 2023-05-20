@@ -78,8 +78,10 @@ void RootRouting::HandleMessage(transport::protobuf::RoutingMessage & message, b
 
     switch (root_message.message_type()) {
     case kCompleteNodeRequest:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeRequest 1 RootRouting::HandleMessage");
         return HandleFindNodesFromOthersRequest(message, packet);
     case kCompleteNodeResponse:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeResponse 2 RootRouting::HandleMessage");
         return HandleFindNodesFromOthersResponse(message, packet);
     default:
         xwarn("invalid root message type[%d].", root_message.message_type());
@@ -217,7 +219,7 @@ bool RootRouting::FindNodesFromOthers(base::ServiceType const & service_type,
         return true;
     }
     message.set_data(root_data);
-
+    xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeRequest FindNodesFromOthers");
     SendToClosestNode(message, false);
 
     using namespace std::placeholders;

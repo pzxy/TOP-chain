@@ -94,6 +94,23 @@ void ElectManager::OnElectUpdated(std::vector<wrouter::WrouterTableNodes> const 
     wrouter::SmallNetNodes::Instance()->AddNode(elect_data);
     wrouter::MultiRouting::Instance()->add_routing_table_info(group_xip, routing_table_info);
     for (auto const & wrouter_node : elect_data) {
+        xinfo("OnElectUpdated-info account match:  self:%s iter:%s ,xip:%s ", global_node_id.c_str(), wrouter_node.node_id.c_str(), wrouter_node.m_xip2.to_string().c_str());
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LKfBYfwTcNniDSQqj8fj5atiDqP8ZEJJv6 ,xip:f60000ff02000000.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LLJ8AsN4hREDtCpuKAxJFwqka9LwiAon3M ,xip:f60000ff02000001.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LNi53Ub726HcPXZfC4z6zLgTo5ks6GzTUp ,xip:f60000ff02000002.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LTSip8Xbjutrtm8RkQzsHKqt28g97xdUxg ,xip:f60000ff02000003.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LUv7e8RZLNtnE1K9sEfE9SYe74rwYkzEub ,xip:f60000ff02000004.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LVpL9XRtVdU5RwfnmrCtJhvQFxJ8TB46gB ,xip:f60000ff02000005.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LXRSDkzrUsseZmfJFnSSBsgm754XwV9SLw ,xip:f60000ff02000006.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LXqp1NkfooMAw7Bty2iXTxgTCfsygMnxrT ,xip:f60000ff02000007.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LKfBYfwTcNniDSQqj8fj5atiDqP8ZEJJv6 ,xip:f60000ff0a040400.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LLJ8AsN4hREDtCpuKAxJFwqka9LwiAon3M ,xip:f60000ff0a040401.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LNi53Ub726HcPXZfC4z6zLgTo5ks6GzTUp ,xip:f60000ff0a040402.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LTSip8Xbjutrtm8RkQzsHKqt28g97xdUxg ,xip:f60000ff0a040403.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LUv7e8RZLNtnE1K9sEfE9SYe74rwYkzEub ,xip:f60000ff0a040404.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LVpL9XRtVdU5RwfnmrCtJhvQFxJ8TB46gB ,xip:f60000ff0a040405.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LXRSDkzrUsseZmfJFnSSBsgm754XwV9SLw ,xip:f60000ff0a040406.0200000000000000
+        // self:T00000LeXNqW7mCCoj23LEsxEmNcWKs8m6kJH446 iter:T00000LXqp1NkfooMAw7Bty2iXTxgTCfsygMnxrT ,xip:f60000ff0a040407.0200000000000000
         if (global_node_id != wrouter_node.node_id) {
             xdbg("node id not match self:%s iter:%s", global_node_id.c_str(), wrouter_node.node_id.c_str());
             continue;

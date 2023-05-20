@@ -104,16 +104,22 @@ void MultiRouting::HandleRootMessage(transport::protobuf::RoutingMessage & messa
 
     switch (root_message.message_type()) {
     case kCompleteNodeRequest:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeRequest 1");
         XATTRIBUTE_FALLTHROUGH;
     case kCompleteNodeResponse:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeResponse 2");
         return root_routing_table_->HandleMessage(message, packet);
     case kCacheElectNodesRequest:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCacheElectNodesRequest 3");
         return HandleCacheElectNodesRequest(message, packet);
     case kCacheElectNodesResponse:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCacheElectNodesResponse 4");
         return HandleCacheElectNodesResponse(message, packet);
     case kAddLastRoundElectNodesRequest:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kAddLastRoundElectNodesRequest 5");
         return HandleAddLastRoundElectNodesRequest(message, packet);
     case kAddLastRoundElectNodesResponse:
+        xinfo("callback-info-wroutermessagehandler-4 kRootMessage kAddLastRoundElectNodesResponse 6");
         return HandleAddLastRoundElectNodesResponse(message, packet);
     default:
         TOP_WARN("invalid root message type[%d].", root_message.message_type());
@@ -545,6 +551,7 @@ std::vector<kadmlia::NodeInfoPtr> MultiRouting::transform_node_vec(base::Service
     return res;
 }
 
+
 bool MultiRouting::UpdateNodeSizeCallback(std::function<void(uint64_t & node_size, std::error_code & ec)> cb) {
     return rrs_params_mgr_ptr->set_callback(cb);
 }
@@ -581,6 +588,7 @@ void MultiRouting::CompleteElectRoutingTable() {
                     // OnCompleteElectRoutingTableCallback cb = std::bind(&MultiRouting::OnCompleteElectRoutingTable, this, routing_table_pair.first, _p.first,
                     // std::placeholders::_1);
                     std::unique_lock<std::mutex> lock(root_routing_table_mutex_);
+                    xinfo("callback-info-wroutermessagehandler-4 kRootMessage kCompleteNodeRequest CompleteElectRoutingTable");
                     if (root_routing_table_->FindNodesFromOthers(routing_table_pair.first, _p.first, cb, _p.second) == false) {
                         flag = true;
                         break;
