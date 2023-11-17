@@ -137,9 +137,9 @@ private:
      * @param table_id
      */
     void calc_votes_table_and_adv_vote(std::map<std::string, std::map<std::string, uint64_t>> & votes_table_map, std::map<std::string, std::string> & adv_votes, uint32_t table_id);
-    void calc_section_votes_table_and_adv_vote(std::map<std::string, std::string> & voters,
-                                               std::map<std::string, std::map<std::string, std::string>> & pledge_votes_map,
-                                               std::map<std::string, uint64_t> & stored_expire_token_map,
+    void calc_section_votes_table_and_adv_vote(std::map<std::string, std::string> const & voters,
+                                               std::map<std::string, std::map<std::string, std::string>> const & pledge_votes_map,
+                                               std::map<std::string, uint64_t> const & stored_expire_token_map,
                                                std::map<std::string, std::map<std::string, uint64_t>> & votes_table_map,
                                                std::map<std::string, std::string> & adv_votes,
                                                uint64_t table_id,
@@ -149,6 +149,12 @@ private:
                                  std::map<std::string, std::string> & voters,
                                  std::map<std::string, std::map<std::string, std::string>> & pledge_votes_map,
                                  std::map<std::string, uint64_t> & stored_expire_token_map);
+
+    void build_section_table_effective_reward(std::map<std::string, std::string> const & voters,
+                                              std::map<std::string, std::map<std::string, std::string>> const & pledge_votes_map,
+                                              std::map<std::string, uint64_t> const & stored_expire_token_map,
+                                              std::map<std::string, std::map<std::string, std::string>> & pledge_infos,
+                                              std::map<std::string, std::map<std::string, uint64_t>> & voter_infos);
 };
 using xtable_reward_claiming_contract_t = xtop_table_reward_claiming_contract;
 

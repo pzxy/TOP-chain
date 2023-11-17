@@ -10,13 +10,13 @@
 #include "xbasic/xserializable_based_on.h"
 #include "xbasic/xserialize_face.h"
 #include "xbasic/xuint.hpp"
+#include "xcommon/common.h"
 #include "xcommon/xaddress.h"
 #include "xcommon/xlogic_time.h"
 #include "xcommon/xrole_type.h"
 #include "xconfig/xconfig_register.h"
 #include "xconfig/xpredefined_configurations.h"
 #include "xdata/xdata_common.h"
-#include "xcommon/common.h"
 #include "xdata/xsystem_contract/xallowance.h"
 
 #include <algorithm>
@@ -72,6 +72,7 @@ XINLINE_CONSTEXPR char const * XPROPERTY_LAST_READ_REC_REG_CONTRACT_BLOCK_HEIGHT
 XINLINE_CONSTEXPR char const * XPROPERTY_LAST_READ_REC_REG_CONTRACT_LOGIC_TIME = "@144";
 XINLINE_CONSTEXPR char const * XPORPERTY_CONTRACT_VOTE_REPORT_TIME_KEY = "@145";
 XINLINE_CONSTEXPR char const * XPROPERTY_REWARD_DETAIL = "@146";
+XINLINE_CONSTEXPR char const * XPROPERTY_CONTRACT_REWARD_CLAIMING_HEIGHT = "@147";
 
 // crosschain
 XINLINE_CONSTEXPR char const * XPROPERTY_LAST_HASH = "@160";
@@ -282,8 +283,10 @@ struct xaction_node_info_t final : public xserializable_based_on<void> {
     common::xnode_id_t node_id;
     common::xnode_type_t node_type;
     bool action_type;  // default true for punish
-    xaction_node_info_t() : node_id(common::xnode_id_t{}), node_type(common::xnode_type_t::invalid), action_type(true) {}
-    xaction_node_info_t(common::xnode_id_t _node_id, common::xnode_type_t _node_type, bool type = true) : node_id(_node_id), node_type(_node_type), action_type(type) {}
+    xaction_node_info_t() : node_id(common::xnode_id_t{}), node_type(common::xnode_type_t::invalid), action_type(true) {
+    }
+    xaction_node_info_t(common::xnode_id_t _node_id, common::xnode_type_t _node_type, bool type = true) : node_id(_node_id), node_type(_node_type), action_type(type) {
+    }
 
 private:
     int32_t do_write(base::xstream_t & stream) const override;
@@ -845,6 +848,7 @@ public:
     uint64_t m_zec_vote_contract_height{0};
     uint64_t m_zec_workload_contract_height{0};
     uint64_t m_zec_reward_contract_height{0};
+    uint64_t m_xtable_reward_claiming_contract_height{0};
     uint16_t m_edge_reward_ratio{0};
     uint16_t m_archive_reward_ratio{0};
     uint16_t m_validator_reward_ratio{0};
@@ -877,11 +881,11 @@ private:
 };
 
 struct xnode_manage_account_info_t final : public xserializable_based_on<void> {
-    uint64_t        reg_time;
-    uint64_t        expiry_time;
-    uint64_t        cert_time;
-    std::string     account;
-    std::string     cert_info;
+    uint64_t reg_time;
+    uint64_t expiry_time;
+    uint64_t cert_time;
+    std::string account;
+    std::string cert_info;
 
 private:
     /**

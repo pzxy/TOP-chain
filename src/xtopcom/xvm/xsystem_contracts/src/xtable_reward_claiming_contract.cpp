@@ -83,6 +83,8 @@ void xtop_table_reward_claiming_contract::setup() {
         acc_token += 1;
     }
     TOP_TOKEN_INCREASE(acc_token);
+
+    STRING_CREATE(data::system_contract::XPROPERTY_CONTRACT_REWARD_CLAIMING_HEIGHT);
 }
 
 xcontract::xcontract_base * xtop_table_reward_claiming_contract::clone() {
@@ -128,9 +130,9 @@ void xtop_table_reward_claiming_contract::get_section_voters_info(const std::str
     }
 }
 
-void xtop_table_reward_claiming_contract::calc_section_votes_table_and_adv_vote(std::map<std::string, std::string> & voters,
-                                                                                std::map<std::string, std::map<std::string, std::string>> & pledge_votes_map,
-                                                                                std::map<std::string, uint64_t> & stored_expire_token_map,
+void xtop_table_reward_claiming_contract::calc_section_votes_table_and_adv_vote(std::map<std::string, std::string> const & voters,
+                                                                                std::map<std::string, std::map<std::string, std::string>> const & pledge_votes_map,
+                                                                                std::map<std::string, uint64_t> const & stored_expire_token_map,
                                                                                 std::map<std::string, std::map<std::string, uint64_t>> & votes_table_map,
                                                                                 std::map<std::string, std::string> & adv_votes,
                                                                                 uint64_t table_id,
@@ -141,9 +143,8 @@ void xtop_table_reward_claiming_contract::calc_section_votes_table_and_adv_vote(
         base::xstream_t stream(base::xcontext_t::instance(), (uint8_t *)vote_table_str.c_str(), (uint32_t)vote_table_str.size());
         std::map<std::string, uint64_t> votes_table;
         stream >> votes_table;
-        pledge_votes_map.find(account);
-        std::map<std::string, std::string> pledge_votes;
 
+        std::map<std::string, std::string> pledge_votes;
         auto iter = pledge_votes_map.find(account);
         if (iter == pledge_votes_map.end()) {
             continue;
@@ -158,7 +159,7 @@ void xtop_table_reward_claiming_contract::calc_section_votes_table_and_adv_vote(
         uint64_t calc_expire_token{0};
         uint64_t unexpire_vote_num{0};
         uint64_t vote_sum{0};
-        for (auto & v : pledge_votes) {
+        for (auto const & v : pledge_votes) {
             uint64_t vote_num{0};
             uint16_t duration{0};
             uint64_t lock_time{0};
@@ -234,6 +235,9 @@ void xtop_table_reward_claiming_contract::calc_votes_table_and_adv_vote(std::map
                                                                         std::map<std::string, std::string> & adv_votes,
                                                                         uint32_t table_id) {
     auto m_timer_height = TIME();
+    // std::map<std::string, std::string> reward_infos;
+    // std::map<std::string, std::map<std::string, std::string>> pledge_infos;
+    // std::map<std::string, std::map<std::string, uint64_t>> voter_infos;
     for (auto i = 1; i <= data::system_contract::XPROPERTY_SPLITED_NUM; ++i) {
         std::string property_name{data::system_contract::XPORPERTY_CONTRACT_VOTES_KEY_BASE};
         property_name += "-" + std::to_string(i);
@@ -242,6 +246,81 @@ void xtop_table_reward_claiming_contract::calc_votes_table_and_adv_vote(std::map
         std::map<std::string, uint64_t> stored_expire_token_map;
         get_section_voters_info(property_name, table_id, voters, pledge_votes_map, stored_expire_token_map);
         calc_section_votes_table_and_adv_vote(voters, pledge_votes_map, stored_expire_token_map, votes_table_map, adv_votes, table_id, m_timer_height);
+        // build_section_table_effective_reward(voters, pledge_votes_map, stored_expire_token_map, pledge_infos, voter_infos);
+    }
+    // for (auto const & reward : rewards) {
+    //     reward_infos[reward.first] = std::to_string(reward.second);
+    // }
+
+    // std::map<std::string, std::string> table_effective_reward;
+    // base::xstream_t stream1(top::base::xcontext_t::instance());
+    // stream1 << reward_infos;
+    // auto reward_infos_str = std::string((char *)stream1.data(), stream1.size());
+    // table_effective_reward["reward_infos"] = reward_infos_str;
+
+    // base::xstream_t stream2(top::base::xcontext_t::instance());
+    // stream2 << pledge_infos;
+    // auto pledge_infos_str = std::string((char *)stream2.data(), stream2.size());
+    // table_effective_reward["pledge_infos"] = pledge_infos_str;
+
+    // base::xstream_t stream3(top::base::xcontext_t::instance());
+    // stream3 << voter_infos;
+    // auto voter_infos_str = std::string((char *)stream3.data(), stream3.size());
+    // table_effective_reward["voter_infos"] = voter_infos_str;
+
+    // base::xstream_t stream4(top::base::xcontext_t::instance());
+    // stream4 << table_effective_reward;
+    // auto table_effective_reward_str = std::string((char *)stream4.data(), stream4.size());
+
+    // table_effective_rewards["contract_addr1"] = table_effective_reward_str;
+    auto height = get_blockchain_height(sys_contract_sharding_reward_claiming_addr);
+    STRING_SET(data::system_contract::XPROPERTY_CONTRACT_REWARD_CLAIMING_HEIGHT, height);
+}
+
+void xtop_table_reward_claiming_contract::build_section_table_effective_reward(std::map<std::string, std::string> const & voters,
+                                                                               std::map<std::string, std::map<std::string, std::string>> const & pledge_votes_map,
+                                                                               std::map<std::string, uint64_t> const & stored_expire_token_map,
+                                                                               std::map<std::string, std::map<std::string, std::string>> & pledge_infos,
+                                                                               std::map<std::string, std::map<std::string, uint64_t>> & voter_infos) {
+    for (auto const & entity : voters) {
+        auto const & account = entity.first;
+        auto const & vote_table_str = entity.second;
+        base::xstream_t stream(base::xcontext_t::instance(), (uint8_t *)vote_table_str.c_str(), (uint32_t)vote_table_str.size());
+        std::map<std::string, uint64_t> votes_table;
+        stream >> votes_table;
+
+        auto iter = pledge_votes_map.find(account);
+        if (iter == pledge_votes_map.end()) {
+            continue;
+        }
+
+        std::map<std::string, std::string> pledge_info;
+
+        std::map<std::string, std::string> pledge_votes;
+        pledge_votes = iter->second;
+        for (auto const & v : pledge_votes) {
+            uint64_t vote_num{0};
+            uint16_t duration{0};
+            uint64_t lock_time{0};
+            base::xstream_t first_stream{xcontext_t::instance(), (uint8_t *)v.first.data(), static_cast<uint32_t>(v.first.size())};
+            first_stream >> duration;
+            first_stream >> lock_time;
+
+            base::xstream_t second_stream{xcontext_t::instance(), (uint8_t *)v.second.data(), static_cast<uint32_t>(v.second.size())};
+            second_stream >> vote_num;
+            auto key = std::to_string(lock_time) + "_" + std::to_string(duration);
+            pledge_info[key] = std::to_string(vote_num);
+        }
+
+        uint64_t stored_expire_token = 0;
+        auto iter2 = stored_expire_token_map.find(account);
+        if (iter2 != stored_expire_token_map.end()) {
+            stored_expire_token = iter2->second;
+        }
+        pledge_info["expired_token"] = std::to_string(stored_expire_token);
+
+        voter_infos[account] = votes_table;
+        pledge_infos[account] = pledge_info;
     }
 }
 

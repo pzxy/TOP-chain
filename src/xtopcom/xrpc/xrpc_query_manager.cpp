@@ -482,6 +482,82 @@ void xrpc_query_manager::getIssuanceDetail(Json::Value & js_req, Json::Value & j
     } else {
         jv["node_rewards"] = jr;
     }
+
+    std::map<std::string, std::string> table_effective_rewards;
+    if (statestore::xstatestore_hub_t::instance()->get_map_property(
+            table_reward_claiming_contract_address, issue_detail.m_xtable_reward_claiming_contract_height, data::system_contract::XPROPERTY_CONTRACT_REWARD_CLAIMING_KEY, table_effective_rewards) != 0) {
+        xwarn("[grpc::getIssuanceDetail] contract_address: %s, height: %llu, property_name: %s",
+              table_reward_claiming_contract_address,
+              issue_detail.m_xtable_reward_claiming_contract_height,
+              data::system_contract::XPROPERTY_CONTRACT_REWARD_CLAIMING_KEY);
+    }
+    for (auto const & table_effective_reward : table_effective_rewards) {
+        auto const & contract = table_effective_reward.first;
+        auto const & table_detail_str = table_effective_reward.second;
+        Json::Value jvt1;
+        std::map<std::string, std::string> table_detail;
+        base::xstream_t stream(xcontext_t::instance(), (uint8_t *)table_detail_str.data(), table_detail_str.size());
+        stream >> table_detail;
+        for (auto const & detail : table_detail) {  // {reward:}
+            auto key = detail.first;
+            auto value_str = detail.second;
+            Json::Value array;
+            if (key == "reward_infos") {
+                std::map<std::string, std::string> reward_infos;
+                base::xstream_t stream(xcontext_t::instance(), (uint8_t *)value_str.data(), value_str.size());
+                stream >> reward_infos;
+                for (auto const & reward : reward_infos) {
+                    Json::Value n;
+                    n["account_addr"] = reward.first;
+                    n["count"] = reward.second;
+                    array.append(n);
+                }
+                jvt1["reward_infos"] = array;
+            } else if (key == "pledge_infos") {
+                std::map<std::string, std::map<std::string, std::string>> pledge_infos;
+                base::xstream_t stream(xcontext_t::instance(), (uint8_t *)value_str.data(), value_str.size());
+                stream >> pledge_infos;
+                for (auto const & pledge : pledge_infos) {
+                    Json::Value n;
+                    n["account_addr"] = pledge.first;
+                    Json::Value pledge_votes_arr;
+                    for (auto const & v : pledge.second) {
+                        if (v.first == "expired_token") {
+                            n["expired_token"] = v.second;
+                        } else {
+                            Json::Value n2;
+                            n2["locktimer_duration"] = v.first;
+                            n2["count"] = (Json::UInt64)base::xstring_utl::touint64(v.second);
+                            pledge_votes_arr.append(n2);
+                        }
+                    }
+                    n["pledge_votes"] = pledge_votes_arr;
+                    array.append(n);
+                }
+                jvt1["pledge_infos"] = array;
+            } else {
+                std::map<std::string, std::map<std::string, uint64_t>> voter_infos;
+                base::xstream_t stream(xcontext_t::instance(), (uint8_t *)value_str.data(), value_str.size());
+                stream >> voter_infos;
+                for (auto const & v : voter_infos) {
+                    Json::Value n;
+                    n["account_addr"] = v.first;
+                    Json::Value voters_arr;
+                    for (auto const & v2 : v.second) {
+                        Json::Value n2;
+                        n2["account_addr"] = v2.first;
+                        n2["count"] = (Json::UInt64)v2.second;
+                        voters_arr.append(n2);
+                    }
+                    n["voters"] = voters_arr;
+                    array.append(n);
+                }
+                jvt1["voter_infos"] = array;
+            }
+        }
+        jvt1["account_addr"] = contract;
+        jv["table_effective_rewards"].append(jvt1);
+    }
     std::stringstream ss;
     ss << std::setw(40) << std::setfill('0') << issue_detail.m_zec_reward_contract_height + 1;
     auto key = ss.str();
